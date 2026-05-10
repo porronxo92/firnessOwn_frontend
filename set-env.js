@@ -2,7 +2,7 @@
 const fs = require('fs');
 
 // Leer la variable de entorno API_URL de Netlify/Vercel
-const apiUrl = process.env.API_URL || 'http://localhost:8000/api';
+const apiUrl = process.env.API_URL || 'https://fitness-own-backend.vercel.app/api';
 
 // Contenido del archivo environment.prod.ts
 const envContent = `export const environment = {
