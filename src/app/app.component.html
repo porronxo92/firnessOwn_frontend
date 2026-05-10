@@ -1,0 +1,32 @@
+<div class="app-shell">
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="brand-text">FITNESS<span class="accent">OWN</span></span>
+    </div>
+    <div class="nav-links">
+      <a routerLink="/mi-plan" routerLinkActive="active">Mi Plan</a>
+      <a routerLink="/plan" routerLinkActive="active">Plan Estático</a>
+      <a routerLink="/registro" routerLinkActive="active">Registro</a>
+      <a routerLink="/progreso" routerLinkActive="active">Progreso</a>
+    </div>
+    <div class="nav-user">
+      <button class="btn-theme" (click)="toggleTheme()" [title]="isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'" aria-label="Toggle theme">
+        @if (isDark()) {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7zm0-5a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 16a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1zm9-9h-2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zM4 12H2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zm14.95-6.36-1.41 1.41a1 1 0 1 1-1.42-1.41l1.42-1.42a1 1 0 1 1 1.41 1.41zM7.05 18.36l-1.41 1.41a1 1 0 1 1-1.41-1.41l1.41-1.42a1 1 0 1 1 1.42 1.41zM18.95 18.36a1 1 0 1 1-1.41 1.41l-1.42-1.41a1 1 0 1 1 1.41-1.41zm-12.9-12.7a1 1 0 1 1-1.41 1.41L3.22 5.66a1 1 0 1 1 1.41-1.41z"/></svg>
+        }
+      </button>
+      @if (auth.isAuthenticated()) {
+        <a routerLink="/perfil" class="username">{{ auth.currentUser()?.username }}</a>
+        <button class="btn-logout" (click)="auth.logout()">Salir</button>
+      } @else {
+        <a routerLink="/login" class="btn-login">Login</a>
+      }
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <router-outlet />
+  </main>
+</div>
