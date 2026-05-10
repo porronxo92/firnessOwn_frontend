@@ -45,7 +45,3 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
-environment.ts
-!environment.ts
-environment.prod.ts
-!environment.prod.ts
