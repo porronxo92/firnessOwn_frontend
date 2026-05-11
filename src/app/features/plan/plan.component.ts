@@ -1,6 +1,8 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { PhaseService } from '../../core/services/phase.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Phase } from '../../core/models/phase.model';
 import { Exercise } from '../../core/models/exercise.model';
 import { SessionTableComponent } from './session-table/session-table.component';
@@ -137,6 +139,21 @@ import { AnatomyModalComponent } from './anatomy-modal/anatomy-modal.component';
           (close)="showAnatomyModal.set(false)"
         />
       }
+
+      <!-- Login Alert Modal -->
+      @if (showLoginAlert()) {
+        <div class="modal-overlay" (click)="closeLoginAlert()">
+          <div class="login-alert-modal" (click)="$event.stopPropagation()">
+            <div class="alert-icon">🔒</div>
+            <h3>Inicia sesión para registrar</h3>
+            <p>Necesitas una cuenta para guardar tus registros de entrenamiento y hacer seguimiento de tu progreso.</p>
+            <div class="alert-actions">
+              <button class="btn-secondary" (click)="closeLoginAlert()">Cancelar</button>
+              <button class="btn-primary" (click)="goToLogin()">Iniciar sesión</button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -165,32 +182,38 @@ import { AnatomyModalComponent } from './anatomy-modal/anatomy-modal.component';
       color: var(--muted);
       transition: all 0.2s;
       min-width: 100px;
+      flex: 1;
+      max-width: 150px;
 
       &:hover { border-color: var(--accent); color: var(--text); }
       &.active {
         border-color: var(--accent);
-        background: rgba(232, 255, 71, 0.05);
+        background: rgba(255, 95, 31, 0.05);
         color: var(--text);
       }
 
-      .phase-num { font-family: 'Bebas Neue'; font-size: 1.3rem; color: var(--accent); }
-      .phase-name { font-size: 0.8rem; font-weight: 500; }
-      .phase-weeks { font-size: 0.7rem; color: var(--muted); font-family: 'JetBrains Mono'; }
+      .phase-num { font-family: var(--font-header); font-size: 1.3rem; color: var(--accent); }
+      .phase-name { font-size: 0.8rem; font-weight: 500; text-align: center; }
+      .phase-weeks { font-size: 0.7rem; color: var(--muted); font-family: var(--font-mono); }
     }
     .phase-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 1.5rem;
-      gap: 2rem;
+      gap: 1.5rem;
+      flex-wrap: wrap;
 
       h2 { font-size: 1.6rem; margin-bottom: 0.3rem; }
       .phase-desc { color: var(--muted); font-size: 0.85rem; }
+      .phase-info { flex: 1; min-width: 200px; }
       .phase-stats {
         display: flex;
         gap: 1.5rem;
+        flex-wrap: wrap;
         .stat {
           text-align: center;
+          min-width: 60px;
           .stat-label { display: block; font-size: 0.7rem; color: var(--muted); text-transform: uppercase; }
           .stat-value { display: block; font-size: 1.1rem; color: var(--accent); margin-top: 0.2rem; }
         }
@@ -211,6 +234,11 @@ import { AnatomyModalComponent } from './anatomy-modal/anatomy-modal.component';
 
         &.rest { opacity: 0.5; }
         &.active-day { border-color: var(--accent); }
+        &.today {
+          border-color: var(--accent-secondary);
+          box-shadow: 0 0 0 2px rgba(0, 112, 255, 0.15);
+          background: rgba(0, 112, 255, 0.05);
+        }
 
         .day-label { display: block; font-size: 0.7rem; color: var(--muted); margin-bottom: 0.3rem; }
         .day-type { font-size: 0.75rem; }
@@ -220,6 +248,7 @@ import { AnatomyModalComponent } from './anatomy-modal/anatomy-modal.component';
       display: flex;
       gap: 0.5rem;
       margin-bottom: 1.5rem;
+      flex-wrap: wrap;
 
       .tab-btn {
         padding: 0.6rem 1.5rem;
@@ -229,17 +258,186 @@ import { AnatomyModalComponent } from './anatomy-modal/anatomy-modal.component';
         color: var(--muted);
         font-weight: 500;
         transition: all 0.2s;
+        flex: 1;
+        min-width: 100px;
+        text-align: center;
 
         &:hover { color: var(--text); }
-        &.pull.active { border-color: var(--pull); color: var(--pull); background: rgba(71, 196, 255, 0.05); }
-        &.push.active { border-color: var(--push); color: var(--push); background: rgba(255, 107, 71, 0.05); }
-        &.legs.active { border-color: var(--legs); color: var(--legs); background: rgba(180, 127, 255, 0.05); }
+        &.pull.active { border-color: var(--pull); color: var(--pull); background: rgba(0, 112, 255, 0.07); }
+        &.push.active { border-color: var(--push); color: var(--push); background: rgba(255, 140, 0, 0.07); }
+        &.legs.active { border-color: var(--legs); color: var(--legs); background: rgba(168, 85, 247, 0.07); }
+      }
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .page-title { font-size: 2rem; }
+      .subtitle { margin-bottom: 1.5rem; }
+      
+      .phase-selector {
+        gap: 0.5rem;
+      }
+      .phase-btn {
+        min-width: 70px;
+        padding: 0.6rem 0.8rem;
+        .phase-num { font-size: 1.1rem; }
+        .phase-name { font-size: 0.7rem; }
+        .phase-weeks { font-size: 0.65rem; }
+      }
+      
+      .phase-header {
+        flex-direction: column;
+        gap: 1rem;
+        h2 { font-size: 1.3rem; }
+        .phase-stats {
+          gap: 1rem;
+          justify-content: flex-start;
+          .stat {
+            min-width: 50px;
+            .stat-label { font-size: 0.65rem; }
+            .stat-value { font-size: 0.95rem; }
+          }
+        }
+      }
+
+      .week-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.4rem;
+        .day-card {
+          padding: 0.5rem 0.3rem;
+          .day-label { font-size: 0.6rem; }
+          .day-type { font-size: 0.6rem; padding: 0.1rem 0.3rem !important; }
+        }
+      }
+
+      .session-tabs {
+        .tab-btn {
+          padding: 0.5rem 1rem;
+          font-size: 0.85rem;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-title { font-size: 1.6rem; }
+      
+      .phase-selector {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+      }
+      .phase-btn {
+        max-width: none;
+        padding: 0.5rem;
+      }
+
+      .phase-header {
+        .phase-info { min-width: auto; }
+        .phase-stats {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.8rem;
+        }
+      }
+
+      .week-grid {
+        grid-template-columns: repeat(4, 1fr);
+        .day-card:nth-child(n+5) {
+          grid-column: span 1;
+        }
+      }
+
+      .session-tabs {
+        gap: 0.3rem;
+        .tab-btn {
+          padding: 0.5rem 0.8rem;
+          font-size: 0.8rem;
+          min-width: 80px;
+        }
+      }
+    }
+
+    /* Login Alert Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .login-alert-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+
+      .alert-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      h3 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+      }
+
+      p {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+      }
+
+      .alert-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+
+        button {
+          padding: 0.7rem 1.5rem;
+          border-radius: 8px;
+          font-weight: 500;
+          transition: all 0.2s;
+          cursor: pointer;
+        }
+
+        .btn-secondary {
+          background: transparent;
+          border: 1px solid var(--border);
+          color: var(--muted);
+
+          &:hover {
+            border-color: var(--text);
+            color: var(--text);
+          }
+        }
+
+        .btn-primary {
+          background: var(--accent);
+          border: none;
+          color: var(--bg);
+          font-weight: 600;
+
+          &:hover {
+            filter: brightness(1.1);
+          }
+        }
       }
     }
   `]
 })
 export class PlanComponent implements OnInit {
   private phaseService = inject(PhaseService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   phases = signal<Phase[]>([]);
   selectedPhase = signal<Phase | null>(null);
@@ -252,6 +450,8 @@ export class PlanComponent implements OnInit {
   showAnatomyModal = signal(false);
   selectedMuscleGroup = signal('');
   selectedMuscleDesc = signal('');
+
+  showLoginAlert = signal(false);
 
   ngOnInit() {
     this.phaseService.getPhases().subscribe(phases => {
@@ -309,6 +509,11 @@ export class PlanComponent implements OnInit {
   }
 
   openLogModal(exercise: Exercise) {
+    // Verificar si el usuario está autenticado
+    if (!this.authService.isAuthenticated()) {
+      this.showLoginAlert.set(true);
+      return;
+    }
     this.selectedExercise.set(exercise);
     this.showLogModal.set(true);
   }
@@ -317,5 +522,14 @@ export class PlanComponent implements OnInit {
     this.selectedMuscleGroup.set(exercise.muscleGroup);
     this.selectedMuscleDesc.set(exercise.muscleDesc);
     this.showAnatomyModal.set(true);
+  }
+
+  goToLogin() {
+    this.showLoginAlert.set(false);
+    this.router.navigate(['/login']);
+  }
+
+  closeLoginAlert() {
+    this.showLoginAlert.set(false);
   }
 }

@@ -160,3 +160,22 @@ export interface ExerciseHistoryEntry {
   rpe?: number | null;
   createdAt?: string | null;
 }
+
+// === Recent Logs (for Registro view) ===
+
+export interface PlanRecentLogEntry {
+  planExerciseId: number;
+  exerciseName: string;
+  muscleGroup?: string | null;
+  dayType: string;          // strength, cardio, rest
+  sessionName?: string | null;
+  dayName: string;
+  weekNumber: number;
+  phaseName?: string | null;
+  setsDone: number;
+  maxWeightKg?: number | null;
+  maxRepsDone?: number | null;
+  rirActual?: string | null;
+  lastSetAt?: string | null;
+  logDate?: string | null;  // YYYY-MM-DD derived from lastSetAt
+}

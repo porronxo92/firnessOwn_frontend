@@ -91,6 +91,7 @@ import { LogService } from '../../../core/services/log.service';
       margin-bottom: 1.5rem;
       color: var(--muted);
       font-size: 0.85rem;
+      flex-wrap: wrap;
     }
     .log-form {
       margin-bottom: 1.5rem;
@@ -103,6 +104,7 @@ import { LogService } from '../../../core/services/log.service';
     .form-group {
       flex: 1;
       margin-bottom: 0.5rem;
+      min-width: 0;
 
       label {
         display: block;
@@ -130,6 +132,7 @@ import { LogService } from '../../../core/services/log.service';
       padding: 0.5rem 0;
       border-bottom: 1px solid var(--border);
       font-size: 0.85rem;
+      flex-wrap: wrap;
 
       .hist-date { color: var(--muted); }
       .hist-weight { color: var(--accent); font-weight: 500; }
@@ -146,9 +149,29 @@ import { LogService } from '../../../core/services/log.service';
       font-size: 0.7rem;
       padding: 0.15rem 0.5rem;
       border-radius: 4px;
-      &.pull { background: rgba(71, 196, 255, 0.15); color: var(--pull); }
-      &.push { background: rgba(255, 107, 71, 0.15); color: var(--push); }
-      &.legs { background: rgba(180, 127, 255, 0.15); color: var(--legs); }
+      &.pull { background: rgba(0, 112, 255, 0.15); color: var(--pull); }
+      &.push { background: rgba(255, 140, 0, 0.15); color: var(--push); }
+      &.legs { background: rgba(168, 85, 247, 0.15); color: var(--legs); }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .modal-header h3 {
+        font-size: 1.1rem;
+      }
+      .form-row {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .form-group {
+        width: 100%;
+      }
+      .history-item {
+        gap: 0.5rem;
+        .hist-date, .hist-weight, .hist-reps {
+          font-size: 0.8rem;
+        }
+      }
     }
   `]
 })

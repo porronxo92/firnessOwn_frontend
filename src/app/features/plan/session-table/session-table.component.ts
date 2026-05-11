@@ -49,10 +49,12 @@ import { Exercise } from '../../../core/models/exercise.model';
   styles: [`
     .session-table {
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 600px;
     }
     thead {
       th {
@@ -62,6 +64,7 @@ import { Exercise } from '../../../core/models/exercise.model';
         text-transform: uppercase;
         color: var(--muted);
         border-bottom: 1px solid var(--border);
+        white-space: nowrap;
       }
     }
     tbody tr {
@@ -90,16 +93,17 @@ import { Exercise } from '../../../core/models/exercise.model';
       font-size: 0.7rem;
       padding: 0.15rem 0.5rem;
       border-radius: 4px;
+      white-space: nowrap;
 
-      &.back { background: rgba(71, 196, 255, 0.15); color: var(--pull); }
-      &.chest { background: rgba(255, 107, 71, 0.15); color: var(--push); }
-      &.shoulders { background: rgba(255, 209, 71, 0.15); color: var(--core); }
-      &.arms { background: rgba(180, 127, 255, 0.15); color: var(--legs); }
-      &.legs { background: rgba(180, 127, 255, 0.15); color: var(--legs); }
-      &.glutes { background: rgba(71, 255, 180, 0.15); color: var(--cardio); }
+      &.back { background: rgba(0, 112, 255, 0.15); color: var(--pull); }
+      &.chest { background: rgba(255, 140, 0, 0.15); color: var(--push); }
+      &.shoulders { background: rgba(255, 184, 0, 0.15); color: var(--core); }
+      &.arms { background: rgba(168, 85, 247, 0.15); color: var(--legs); }
+      &.legs { background: rgba(168, 85, 247, 0.15); color: var(--legs); }
+      &.glutes { background: rgba(16, 217, 160, 0.15); color: var(--cardio); }
     }
     .mono {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 0.85rem;
     }
     .col-notes {
@@ -115,9 +119,79 @@ import { Exercise } from '../../../core/models/exercise.model';
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.05em;
+      white-space: nowrap;
 
       &:hover {
         transform: scale(1.05);
+      }
+    }
+
+    /* Mobile card layout */
+    @media (max-width: 768px) {
+      table {
+        min-width: auto;
+      }
+      thead {
+        display: none;
+      }
+      tbody tr {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+
+        td {
+          padding: 0.3rem 0;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+      }
+      .col-name {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+      }
+      .col-muscle {
+        margin-bottom: 0.5rem;
+      }
+      .col-sets, .col-reps, .col-rir {
+        &::before {
+          color: var(--muted);
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          min-width: 60px;
+        }
+      }
+      .col-sets::before { content: 'Series: '; }
+      .col-reps::before { content: 'Reps: '; }
+      .col-rir::before { content: 'RIR: '; }
+      .col-notes {
+        max-width: none;
+        font-style: italic;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border);
+        margin-top: 0.5rem;
+      }
+      .col-action {
+        margin-top: 0.5rem;
+        .btn-log {
+          width: 100%;
+          padding: 0.5rem;
+          text-align: center;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      tbody tr {
+        padding: 0.8rem;
+      }
+      .col-name {
+        font-size: 0.95rem;
       }
     }
   `]

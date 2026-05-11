@@ -104,6 +104,8 @@ export interface GeneratedPlan {
   primaryFocus?: string;
   planStructure: PlanStructure;
   isActive: boolean;
+  generationStatus: 'pending' | 'generating' | 'completed' | 'error';
+  generationError?: string;
   startedAt?: string;
   completedAt?: string;
   createdAt?: string;
@@ -175,4 +177,19 @@ export interface AdjustmentSuggestion {
 
 export interface GeneratePlanRequest {
   regenerate?: boolean;
+}
+
+export interface PlanGenerationAccepted {
+  planId: number;
+  status: 'generating';
+  message: string;
+}
+
+export interface PlanGenerationStatus {
+  id: number;
+  generationStatus: 'pending' | 'generating' | 'completed' | 'error';
+  generationError?: string;
+  name: string;
+  isActive: boolean;
+  createdAt?: string;
 }

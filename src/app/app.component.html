@@ -4,10 +4,14 @@
       <span class="brand-text">FITNESS<span class="accent">OWN</span></span>
     </div>
     <div class="nav-links">
-      <a routerLink="/mi-plan" routerLinkActive="active">Mi Plan</a>
+      @if (auth.isAuthenticated()) {
+        <a routerLink="/mi-plan" routerLinkActive="active">Mi Plan</a>
+      }
       <a routerLink="/plan" routerLinkActive="active">Plan Estático</a>
-      <a routerLink="/registro" routerLinkActive="active">Registro</a>
-      <a routerLink="/progreso" routerLinkActive="active">Progreso</a>
+      @if (auth.isAuthenticated()) {
+        <a routerLink="/registro" routerLinkActive="active">Registro</a>
+        <a routerLink="/progreso" routerLinkActive="active">Progreso</a>
+      }
     </div>
     <div class="nav-user">
       <button class="btn-theme" (click)="toggleTheme()" [title]="isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'" aria-label="Toggle theme">

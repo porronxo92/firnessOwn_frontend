@@ -112,9 +112,9 @@ interface UserProfile {
       margin-bottom: 2rem;
 
       h1 {
-        font-family: 'Bebas Neue', sans-serif;
+        font-family: var(--font-header);
         font-size: 2.5rem;
-        letter-spacing: 0.05em;
+        letter-spacing: -0.5px;
         color: var(--text);
       }
 
@@ -151,9 +151,9 @@ interface UserProfile {
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      background: var(--accent);
-      color: #09090f;
-      font-family: 'Bebas Neue', sans-serif;
+      background: var(--accent-gradient);
+      color: #fff;
+      font-family: var(--font-header);
       font-size: 2.5rem;
       display: flex;
       align-items: center;
@@ -176,7 +176,7 @@ interface UserProfile {
       .user-since {
         color: var(--muted);
         font-size: 0.75rem;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-mono);
       }
     }
 
@@ -243,12 +243,48 @@ interface UserProfile {
     }
 
     @media (max-width: 700px) {
+      .perfil-container {
+        padding: 1rem;
+      }
+
+      .perfil-header {
+        margin-bottom: 1.5rem;
+        h1 { font-size: 2rem; }
+      }
+
       .perfil-grid {
         grid-template-columns: 1fr;
 
         .avatar-card {
           grid-row: auto;
         }
+      }
+    }
+
+    @media (max-width: 480px) {
+      .perfil-header {
+        h1 { font-size: 1.6rem; }
+        .subtitle { font-size: 0.9rem; }
+      }
+
+      .avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+      }
+
+      .user-info {
+        h2 { font-size: 1.1rem; }
+      }
+
+      .form-card {
+        padding: 1rem;
+        h3 { font-size: 0.9rem; margin-bottom: 1rem; }
+      }
+
+      .form-group {
+        margin-bottom: 0.75rem;
+        label { font-size: 0.75rem; }
       }
     }
   `]

@@ -1,6 +1,10 @@
 import { Component, Input, Output, EventEmitter, OnChanges, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { WorkoutLog } from '../../../core/models/exercise.model';
+
+interface LogEntry {
+  logDate: string;
+  sessionType?: string | null;
+}
 
 interface CalCell {
   empty: boolean;
@@ -99,7 +103,7 @@ interface CalCell {
 
       &:hover { background: rgba(255,255,255,0.05); border-color: var(--border); }
       &.today .cal-num { color: var(--accent); font-weight: 700; }
-      &.selected { background: rgba(232,255,71,0.12); border-color: var(--accent) !important; color: var(--accent); }
+      &.selected { background: rgba(255, 95, 31, 0.12); border-color: var(--accent) !important; color: var(--accent); }
       &.has-logs { border-color: rgba(255,255,255,0.08); }
     }
     .cal-num { line-height: 1; }
@@ -121,10 +125,35 @@ interface CalCell {
       padding: 0;
       &:hover { color: var(--danger); }
     }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .cal-wrapper {
+        min-width: auto;
+        width: 100%;
+      }
+      .cal-month-label {
+        font-size: 0.8rem;
+      }
+      .cal-dow {
+        font-size: 0.6rem;
+      }
+      .cal-day {
+        height: 32px;
+        font-size: 0.75rem;
+      }
+      .cal-empty {
+        height: 32px;
+      }
+      .dot {
+        width: 3px;
+        height: 3px;
+      }
+    }
   `]
 })
 export class CalendarPickerComponent implements OnChanges {
-  @Input() logs: WorkoutLog[] = [];
+  @Input() logs: LogEntry[] = [];
   @Input() selectedDate = '';
   @Output() dateChange = new EventEmitter<string>();
 

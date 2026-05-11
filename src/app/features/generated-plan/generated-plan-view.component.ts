@@ -351,7 +351,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
     }
 
     .plan-info h1 {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-header);
       font-size: 2.5rem;
       color: var(--accent);
       margin-bottom: 0.5rem;
@@ -383,7 +383,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
     }
 
     .meta-value {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 1.25rem;
       font-weight: bold;
     }
@@ -430,8 +430,14 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
     }
 
     .week-dot.current {
-      background: var(--accent);
-      box-shadow: 0 0 0 4px rgba(232, 255, 71, 0.3);
+      background: var(--accent-secondary);
+      box-shadow: 0 0 0 4px rgba(0, 112, 255, 0.3);
+      animation: pulse-blue 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-blue {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(0, 112, 255, 0.3); }
+      50% { box-shadow: 0 0 0 8px rgba(0, 112, 255, 0.15); }
     }
 
     .week-dot.deload {
@@ -504,7 +510,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
     }
 
     .week-header h2 {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-header);
       font-size: 1.75rem;
     }
 
@@ -535,7 +541,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
 
     .day-card.selected {
       border-color: var(--accent);
-      background: rgba(232, 255, 71, 0.1);
+      background: rgba(255, 95, 31, 0.1);
     }
 
     .day-card.rest-day {
@@ -622,7 +628,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
     }
 
     .detail-header h3 {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-header);
       font-size: 1.5rem;
     }
 
@@ -661,7 +667,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
 
     .item-duration {
       color: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
     }
 
     /* Exercise List */
@@ -728,7 +734,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
       padding: 0.25rem 0.5rem;
       background: var(--surface);
       border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
     }
 
     .exercise-notes {
@@ -757,7 +763,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
       font-size: 0.7rem;
       padding: 0.25rem 0.5rem;
       border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
     }
 
     .weight-badge.last {
@@ -860,7 +866,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
     /* Session Notes */
     .session-notes {
       padding: 1rem;
-      background: rgba(232, 255, 71, 0.1);
+      background: rgba(255, 95, 31, 0.08);
       border-radius: 8px;
       margin-top: 1.5rem;
     }
@@ -962,7 +968,7 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
     }
 
     .no-plan-state h2 {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-header);
       font-size: 2rem;
       margin-bottom: 0.5rem;
     }
@@ -991,14 +997,177 @@ import { ExerciseLogModalComponent } from './exercise-log-modal/exercise-log-mod
 
       .plan-header {
         flex-direction: column;
+        gap: 1rem;
+      }
+
+      .plan-info h1 {
+        font-size: 2rem;
+      }
+
+      .plan-meta {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .meta-item {
+        flex: 1;
+        padding: 0.75rem;
+      }
+
+      .days-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+      }
+
+      .day-card {
+        padding: 0.75rem;
+      }
+
+      .day-name {
+        font-size: 0.75rem;
+      }
+
+      .day-type-badge {
+        font-size: 0.5rem;
+        padding: 0.15rem 0.35rem;
+      }
+
+      .session-name {
+        font-size: 0.65rem;
+      }
+
+      .exercise-card {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .exercise-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.875rem;
+      }
+
+      .btn-log {
+        width: 100%;
+        text-align: center;
+      }
+
+      .week-navigation {
+        flex-direction: column;
+      }
+
+      .nav-btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .plan-info h1 {
+        font-size: 1.6rem;
+      }
+
+      .plan-description {
+        font-size: 0.9rem;
+      }
+
+      .meta-item {
+        padding: 0.5rem;
+      }
+
+      .meta-label {
+        font-size: 0.65rem;
+      }
+
+      .meta-value {
+        font-size: 1rem;
+      }
+
+      .week-indicators {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 4px;
+      }
+
+      .week-dot {
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+      }
+
+      .phase-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
       }
 
       .days-grid {
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .week-navigation {
+      .day-preview {
+        display: none;
+      }
+
+      .week-view {
+        padding: 1rem;
+      }
+
+      .week-header {
         flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .week-header h2 {
+        font-size: 1.4rem;
+      }
+
+      .day-detail {
+        padding: 1rem;
+      }
+
+      .detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .detail-header h3 {
+        font-size: 1.2rem;
+      }
+
+      .exercise-params {
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      .param {
+        display: inline-block;
+      }
+
+      .weight-info {
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      .warmup-item, .cooldown-item {
+        flex-direction: column;
+        gap: 0.25rem;
+        text-align: left;
+      }
+
+      .weekly-goals {
+        padding: 1rem;
+      }
+
+      .cta-btn {
+        width: 100%;
+        padding: 0.875rem 1.5rem;
+      }
+
+      .no-plan-state h2 {
+        font-size: 1.6rem;
       }
     }
   `]
@@ -1060,34 +1229,38 @@ export class GeneratedPlanViewComponent implements OnInit {
     this.isLoading.set(true);
     try {
       const plan = await firstValueFrom(this.onboardingService.getActivePlan());
-      this.plan.set(plan || null);
-      
-      if (plan) {
-        // Populate tracking data (idempotent)
-        try {
-          await firstValueFrom(this.trackingService.populatePlan(plan.id));
-        } catch (e) {
-          // Already populated or error - continue
-          console.log('Tracking tables already populated or error:', e);
-        }
 
-        // Load tracking weeks
-        try {
-          const weeks = await firstValueFrom(this.trackingService.getWeeks(plan.id));
-          this.trackingWeeks.set(weeks);
-        } catch (e) {
-          console.error('Error loading tracking weeks:', e);
-        }
+      if (!plan) {
+        // Sin plan activo: redirigir al onboarding para crearlo
+        this.router.navigate(['/onboarding']);
+        return;
       }
-      
+
+      this.plan.set(plan);
+
+      // Populate tracking data (idempotent)
+      try {
+        await firstValueFrom(this.trackingService.populatePlan(plan.id));
+      } catch (e) {
+        // Already populated or error - continue
+        console.log('Tracking tables already populated or error:', e);
+      }
+
+      // Load tracking weeks
+      try {
+        const weeks = await firstValueFrom(this.trackingService.getWeeks(plan.id));
+        this.trackingWeeks.set(weeks);
+      } catch (e) {
+        console.error('Error loading tracking weeks:', e);
+      }
+
       // Seleccionar el primer día que no sea descanso
-      if (plan?.planStructure?.weeks) {
+      if (plan.planStructure?.weeks) {
         const currentWeek = plan.planStructure.weeks.find(w => w.weekNumber === plan.currentWeek);
         if (currentWeek) {
           const firstActiveDay = currentWeek.days.find(d => d.type !== 'rest' && d.type !== 'active_recovery');
           if (firstActiveDay) {
             this.selectedDay.set(firstActiveDay.dayNumber);
-            // Load tracking data for this day
             await this.loadDayTracking(firstActiveDay.dayNumber);
           }
         }

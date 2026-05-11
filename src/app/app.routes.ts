@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { OnboardingGuard, OnboardingCompleteGuard } from './core/guards/onboarding.guard';
+import { OnboardingGuard, OnboardingCompleteGuard, RequiresAuthGuard } from './core/guards/onboarding.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'plan', pathMatch: 'full' },
@@ -10,8 +10,8 @@ export const routes: Routes = [
   },
   {
     path: 'plan',
-    loadComponent: () => import('./features/plan/plan.component').then(m => m.PlanComponent),
-    canActivate: [OnboardingGuard]
+    loadComponent: () => import('./features/plan/plan.component').then(m => m.PlanComponent)
+    // Sin guard - accesible para todos
   },
   {
     path: 'mi-plan',
@@ -21,12 +21,12 @@ export const routes: Routes = [
   {
     path: 'registro',
     loadComponent: () => import('./features/registro/registro.component').then(m => m.RegistroComponent),
-    canActivate: [OnboardingGuard]
+    canActivate: [RequiresAuthGuard]
   },
   {
     path: 'progreso',
     loadComponent: () => import('./features/progreso/progreso.component').then(m => m.ProgresoComponent),
-    canActivate: [OnboardingGuard]
+    canActivate: [RequiresAuthGuard]
   },
   {
     path: 'login',
@@ -35,6 +35,6 @@ export const routes: Routes = [
   {
     path: 'perfil',
     loadComponent: () => import('./features/perfil/perfil.component').then(m => m.PerfilComponent),
-    canActivate: [OnboardingGuard]
+    canActivate: [RequiresAuthGuard]
   },
 ];

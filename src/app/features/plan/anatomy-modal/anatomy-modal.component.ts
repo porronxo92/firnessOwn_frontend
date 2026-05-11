@@ -138,6 +138,39 @@ import { CommonModule } from '@angular/common';
       &.synergist { background: var(--pull); }
       &.stabilizer { background: var(--muted); }
     }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .modal-header {
+        margin-bottom: 1rem;
+        h3 { font-size: 1.2rem; }
+      }
+      .anatomy-body {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+      .anatomy-svg {
+        width: 120px;
+        height: 240px;
+      }
+      .muscle-info {
+        text-align: center;
+        .desc { 
+          font-size: 0.85rem;
+          margin-bottom: 1rem;
+        }
+      }
+      .legend {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+      }
+      .legend-item {
+        font-size: 0.75rem;
+      }
+    }
   `]
 })
 export class AnatomyModalComponent {

@@ -14,6 +14,7 @@ import {
   CompleteDayRequest,
   CompleteWeekRequest,
   ExerciseHistoryEntry,
+  PlanRecentLogEntry,
 } from '../models/plan-tracking.model';
 
 @Injectable({ providedIn: 'root' })
@@ -165,6 +166,15 @@ export class PlanTrackingService {
     const url = `${this.baseUrl}/plans/${planId}/exercise-history/${encodeURIComponent(exerciseName)}`;
     return this.http.get<any[]>(url).pipe(
       map(entries => entries.map(e => this.toCamelCase(e)))
+    );
+  }
+
+  // === Get all recent exercise logs (for Registro view) ===
+  getRecentLogs(planId: number, limit: number = 200): Observable<PlanRecentLogEntry[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/plans/${planId}/recent-logs`, {
+      params: { limit: limit.toString() }
+    }).pipe(
+      map(logs => logs.map(l => this.toCamelCase(l)))
     );
   }
 }

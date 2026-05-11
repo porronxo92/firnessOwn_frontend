@@ -2,8 +2,26 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LogService } from '../../core/services/log.service';
-import { WorkoutLog, CardioLog } from '../../core/models/exercise.model';
+import { PlanTrackingService } from '../../core/services/plan-tracking.service';
+import { OnboardingService } from '../../core/services/onboarding.service';
+import { CardioLog } from '../../core/models/exercise.model';
+import { PlanRecentLogEntry } from '../../core/models/plan-tracking.model';
 import { CalendarPickerComponent } from './calendar-picker/calendar-picker.component';
+
+// Formato interno para mostrar en plantilla (compatible con template existente)
+interface DisplayLog {
+  id: number;
+  logDate: string;
+  exerciseName: string;
+  sessionType: string;
+  weekNumber: number;
+  phaseName: string;
+  weightKg: number | null;
+  setsDone: number | null;
+  repsDone: string | null;
+  rirActual: string | null;
+  notes: string | null;
+}
 
 @Component({
   selector: 'app-registro',
@@ -21,6 +39,11 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
       </div>
 
       @if (activeTab() === 'fuerza') {
+        @if (!activePlanId()) {
+          <div class="empty-state">
+            <p>Necesitas un plan activo para ver tu registro.</p>
+          </div>
+        } @else {
         <!-- Filters -->
         <div class="filters-bar">
           <!-- Inline Calendar -->
@@ -44,7 +67,9 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
 
         <!-- Grouped logs -->
         <div class="logs-list">
-          @if (!groupedLogs().length) {
+          @if (loading()) {
+            <div class="empty-state"><p>Cargando registros...</p></div>
+          } @else if (!groupedLogs().length) {
             <div class="empty-state">
               <p>No hay registros para los filtros seleccionados.</p>
             </div>
@@ -66,31 +91,35 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
                     <div class="log-title">
                       <span class="badge xs" [ngClass]="log.sessionType">{{ log.sessionType }}</span>
                       <span class="log-name">{{ log.exerciseName || 'Ejercicio' }}</span>
+                      @if (log.weekNumber) {
+                        <span class="week-badge">Sem {{ log.weekNumber }}</span>
+                      }
                     </div>
                     <button class="btn-delete" (click)="deleteWorkoutLog(log.id!)">✕</button>
                   </div>
                   <div class="log-data">
                     <span class="data-item">
-                      <span class="label">Peso</span>
-                      <span class="value mono">{{ log.weightKg }}kg</span>
+                      <span class="label">Peso máx.</span>
+                      <span class="value mono">{{ log.weightKg != null ? log.weightKg + 'kg' : '-' }}</span>
                     </span>
                     <span class="data-item">
                       <span class="label">Series×Reps</span>
-                      <span class="value mono">{{ log.setsDone }}×{{ log.repsDone }}</span>
+                      <span class="value mono">{{ log.setsDone }}×{{ log.repsDone || '?' }}</span>
                     </span>
                     <span class="data-item">
                       <span class="label">RIR</span>
                       <span class="value mono">{{ log.rirActual || '-' }}</span>
                     </span>
                   </div>
-                  @if (log.notes) {
-                    <p class="log-notes">{{ log.notes }}</p>
+                  @if (log.phaseName) {
+                    <p class="log-notes">{{ log.phaseName }}</p>
                   }
                 </div>
               }
             </div>
           }
         </div>
+        }
       }
 
       @if (activeTab() === 'cardio') {
@@ -206,7 +235,7 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
         border-radius: 8px;
         color: var(--muted);
 
-        &.active { border-color: var(--accent); color: var(--accent); background: rgba(232, 255, 71, 0.05); }
+        &.active { border-color: var(--accent); color: var(--accent); background: rgba(255, 95, 31, 0.05); }
       }
     }
 
@@ -281,7 +310,7 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
 
       &:hover { background: rgba(255,255,255,0.05); border-color: var(--border); }
       &.today .cal-num { color: var(--accent); font-weight: 700; }
-      &.selected { background: rgba(232,255,71,0.12); border-color: var(--accent) !important; color: var(--accent); }
+      &.selected { background: rgba(255, 95, 31, 0.12); border-color: var(--accent) !important; color: var(--accent); }
       &.has-logs { border-color: rgba(255,255,255,0.08); }
     }
     .cal-num { line-height: 1; }
@@ -328,7 +357,7 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
         color: var(--muted);
         border-radius: 20px;
         font-size: 0.8rem;
-        &.active { background: rgba(232,255,71,0.08); border-color: var(--accent); color: var(--accent); }
+        &.active { background: rgba(255, 95, 31, 0.08); border-color: var(--accent); color: var(--accent); }
         &.pill-pull.active { background: rgba(71,196,255,0.1); border-color: var(--pull); color: var(--pull); }
         &.pill-push.active { background: rgba(255,107,71,0.1); border-color: var(--push); color: var(--push); }
         &.pill-legs.active { background: rgba(180,127,255,0.1); border-color: var(--legs); color: var(--legs); }
@@ -368,8 +397,18 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
           display: flex;
           align-items: center;
           gap: 0.5rem;
+          flex-wrap: wrap;
         }
         .log-name { font-weight: 600; font-size: 0.95rem; }
+        .week-badge {
+          font-size: 0.65rem;
+          padding: 0.1rem 0.4rem;
+          border-radius: 4px;
+          background: rgba(232, 255, 71, 0.08);
+          color: var(--accent);
+          font-weight: 600;
+          text-transform: uppercase;
+        }
       }
       .log-data {
         display: flex;
@@ -395,10 +434,10 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
       border-radius: 4px;
       text-transform: uppercase;
       font-weight: 600;
-      &.pull { background: rgba(71,196,255,0.15); color: var(--pull); }
-      &.push { background: rgba(255,107,71,0.15); color: var(--push); }
-      &.legs { background: rgba(180,127,255,0.15); color: var(--legs); }
-      &.cardio { background: rgba(71,255,180,0.15); color: var(--cardio); }
+      &.pull { background: rgba(0, 112, 255, 0.15); color: var(--pull); }
+      &.push { background: rgba(255, 140, 0, 0.15); color: var(--push); }
+      &.legs { background: rgba(168, 85, 247, 0.15); color: var(--legs); }
+      &.cardio { background: rgba(16, 217, 160, 0.15); color: var(--cardio); }
       &.sm { font-size: 0.65rem; padding: 0.1rem 0.4rem; }
       &.xs { font-size: 0.6rem; padding: 0.1rem 0.35rem; }
     }
@@ -412,9 +451,11 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
       display: flex;
       gap: 0.8rem;
       margin-bottom: 0.8rem;
+      flex-wrap: wrap;
     }
     .form-group {
       flex: 1;
+      min-width: 120px;
       label {
         display: block;
         font-size: 0.75rem;
@@ -428,14 +469,121 @@ import { CalendarPickerComponent } from './calendar-picker/calendar-picker.compo
       padding: 3rem;
       color: var(--muted);
     }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .page-title { font-size: 2rem; }
+      .subtitle { margin-bottom: 1rem; }
+
+      .reg-tabs {
+        button {
+          padding: 0.4rem 1rem;
+          font-size: 0.85rem;
+        }
+      }
+
+      .filters-bar {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .cal-wrapper {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .session-pills {
+        flex-wrap: wrap;
+        button {
+          padding: 0.25rem 0.6rem;
+          font-size: 0.75rem;
+        }
+      }
+
+      .log-card {
+        padding: 0.6rem 1rem;
+
+        .log-data {
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+      }
+
+      .day-header {
+        flex-wrap: wrap;
+        .day-date { 
+          font-size: 0.85rem;
+          width: 100%;
+          margin-bottom: 0.3rem;
+        }
+        .day-count {
+          width: 100%;
+          margin-left: 0;
+          text-align: left;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-title { font-size: 1.6rem; }
+
+      .reg-tabs {
+        flex-wrap: wrap;
+        button {
+          flex: 1;
+          min-width: 80px;
+          padding: 0.4rem 0.8rem;
+        }
+      }
+
+      .form-row {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .form-group {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .log-card {
+        .log-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.3rem;
+        }
+        .log-data {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.5rem;
+          .data-item {
+            text-align: center;
+            .value { font-size: 0.85rem; }
+          }
+        }
+        .btn-delete {
+          align-self: flex-end;
+          margin-top: 0.5rem;
+        }
+      }
+
+      .empty-state {
+        padding: 2rem 1rem;
+      }
+    }
   `]
 })
 export class RegistroComponent implements OnInit {
   private logService = inject(LogService);
+  private planTrackingService = inject(PlanTrackingService);
+  private onboardingService = inject(OnboardingService);
 
   activeTab = signal<'fuerza' | 'cardio'>('fuerza');
-  workoutLogs = signal<WorkoutLog[]>([]);
+  workoutLogs = signal<DisplayLog[]>([]);
   cardioLogs = signal<CardioLog[]>([]);
+  activePlanId = signal<number | null>(null);
+  loading = signal(false);
 
   filterDate = signal<string>('');
   filterSession = signal<'all' | 'pull' | 'push' | 'legs'>('all');
@@ -450,7 +598,7 @@ export class RegistroComponent implements OnInit {
   });
 
   groupedLogs = computed(() => {
-    const map = new Map<string, WorkoutLog[]>();
+    const map = new Map<string, DisplayLog[]>();
     for (const log of this.filteredLogs()) {
       if (!map.has(log.logDate)) map.set(log.logDate, []);
       map.get(log.logDate)!.push(log);
@@ -474,7 +622,12 @@ export class RegistroComponent implements OnInit {
   cardioNotes = '';
 
   ngOnInit() {
-    this.loadWorkoutLogs();
+    this.onboardingService.getActivePlan().subscribe(plan => {
+      if (plan?.id) {
+        this.activePlanId.set(plan.id);
+        this.loadWorkoutLogs();
+      }
+    });
     this.loadCardioLogs();
   }
 
@@ -487,22 +640,43 @@ export class RegistroComponent implements OnInit {
     return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
+  private deriveSessionType(sessionName: string | null | undefined): string {
+    if (!sessionName) return 'otro';
+    const lower = sessionName.toLowerCase();
+    if (/tracción|traccion|espalda|dorsal|pull|bícep|bicep|remo/.test(lower)) return 'pull';
+    if (/empuje|pecho|push|trícep|tricep|hombro|press/.test(lower)) return 'push';
+    if (/pierna|glúteo|gluteo|leg|cuádrícep|femoral|sentadilla/.test(lower)) return 'legs';
+    if (/cardio|bici|trail|carrera/.test(lower)) return 'cardio';
+    return 'otro';
+  }
+
   private loadWorkoutLogs() {
-    this.logService.getLogs({ limit: 200 }).subscribe({ next: logs => {
-      const mapped = logs.map((l: any) => ({
-        id: l.id,
-        exerciseId: l.exercise_id,
-        logDate: l.log_date,
-        weightKg: l.weight_kg,
-        setsDone: l.sets_done,
-        repsDone: l.reps_done,
-        rirActual: l.rir_actual,
-        notes: l.notes,
-        exerciseName: l.exercise_name,
-        sessionType: l.session_type,
-      }));
-      this.workoutLogs.set(mapped);
-    }, error: (e) => console.error('loadWorkoutLogs error:', e) });
+    const planId = this.activePlanId();
+    if (!planId) return;
+    this.loading.set(true);
+    this.planTrackingService.getRecentLogs(planId).subscribe({
+      next: (entries: PlanRecentLogEntry[]) => {
+        const mapped: DisplayLog[] = entries.map(e => ({
+          id: e.planExerciseId,
+          logDate: e.logDate ?? (e.lastSetAt ? e.lastSetAt.split('T')[0] : ''),
+          exerciseName: e.exerciseName,
+          sessionType: this.deriveSessionType(e.sessionName),
+          weekNumber: e.weekNumber,
+          phaseName: e.phaseName ?? '',
+          weightKg: e.maxWeightKg ?? null,
+          setsDone: e.setsDone,
+          repsDone: e.maxRepsDone != null ? String(e.maxRepsDone) : null,
+          rirActual: e.rirActual ?? null,
+          notes: null,
+        }));
+        this.workoutLogs.set(mapped);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('loadWorkoutLogs error:', err);
+        this.loading.set(false);
+      }
+    });
   }
 
   private loadCardioLogs() {
@@ -540,8 +714,12 @@ export class RegistroComponent implements OnInit {
     });
   }
 
-  deleteWorkoutLog(id: number) {
-    this.logService.deleteLog(id).subscribe(() => this.loadWorkoutLogs());
+  deleteWorkoutLog(planExerciseId: number) {
+    // Borra todos los logs de ese ejercicio enviando batch vacío
+    this.planTrackingService.logExerciseBatch(planExerciseId, []).subscribe({
+      next: () => this.loadWorkoutLogs(),
+      error: (err) => console.error('deleteWorkoutLog error:', err)
+    });
   }
 
   deleteCardioLog(id: number) {

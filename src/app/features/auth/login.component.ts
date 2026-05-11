@@ -53,6 +53,7 @@ import { AuthService } from '../../core/services/auth.service';
       align-items: center;
       justify-content: center;
       min-height: 60vh;
+      padding: 1rem;
     }
     .login-card {
       max-width: 400px;
@@ -96,6 +97,27 @@ import { AuthService } from '../../core/services/auth.service';
       border-radius: 6px;
       margin-bottom: 1rem;
       font-size: 0.85rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .login-container {
+        min-height: 50vh;
+        padding: 0.5rem;
+      }
+      .login-card {
+        padding: 1.25rem;
+        h2 {
+          font-size: 1.6rem;
+          margin-bottom: 1.25rem;
+        }
+      }
+      .form-group label {
+        font-size: 0.8rem;
+      }
+      .toggle-text {
+        font-size: 0.8rem;
+      }
     }
   `]
 })

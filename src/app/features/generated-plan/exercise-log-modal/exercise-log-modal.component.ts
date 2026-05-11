@@ -226,7 +226,7 @@ interface SetForm {
 
     .ref-value {
       font-weight: bold;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
     }
 
     .exercise-notes {
@@ -279,7 +279,7 @@ interface SetForm {
       border-radius: 6px;
       padding: 0.5rem;
       color: var(--text);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       width: 100%;
     }
 
@@ -385,7 +385,7 @@ interface SetForm {
       gap: 1rem;
       font-size: 0.8rem;
       color: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
     }
 
     .hist-week {
@@ -422,6 +422,73 @@ interface SetForm {
     .btn-save:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 480px) {
+      .modal-overlay {
+        padding: 0.5rem;
+        align-items: flex-end;
+      }
+
+      .modal-content {
+        border-radius: 16px 16px 0 0;
+        max-height: 95vh;
+      }
+
+      .modal-header {
+        padding: 1rem;
+      }
+
+      .modal-header h2 {
+        font-size: 1.1rem;
+      }
+
+      .modal-body {
+        padding: 1rem;
+      }
+
+      .info-badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+      }
+
+      .sets-header {
+        grid-template-columns: 32px 1fr 60px 50px 36px;
+        font-size: 0.65rem;
+        gap: 0.3rem;
+      }
+
+      .set-row {
+        grid-template-columns: 32px 1fr 60px 50px 36px;
+        gap: 0.3rem;
+        padding: 0.5rem 0;
+      }
+
+      input[type="number"],
+      input[type="text"] {
+        padding: 0.4rem;
+        font-size: 0.85rem;
+      }
+
+      .checkmark {
+        width: 20px;
+        height: 20px;
+      }
+
+      .sets-actions {
+        flex-direction: column;
+      }
+
+      .modal-footer {
+        padding: 1rem;
+        flex-direction: column;
+      }
+
+      .btn-cancel,
+      .btn-save {
+        width: 100%;
+      }
     }
   `]
 })

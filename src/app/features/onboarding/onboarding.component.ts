@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -528,8 +528,13 @@ import {
               @if (isGenerating()) {
                 <div class="generating-state">
                   <div class="spinner"></div>
-                  <h3>Generando tu plan personalizado...</h3>
-                  <p>Esto puede tardar unos segundos. Nuestra IA está creando un plan adaptado a tus objetivos y disponibilidad.</p>
+                  <h3>Tu plan personalizado con IA está siendo creado</h3>
+                  <p>
+                    Nuestro sistema está analizando tu perfil, objetivos, disponibilidad y recursos
+                    para diseñar un programa de entrenamiento completamente adaptado a ti.
+                    Esto puede tardar entre 1 y 3 minutos.
+                  </p>
+                  <p class="generating-hint">No cierres esta ventana. Te avisaremos cuando esté listo.</p>
                 </div>
               }
 
@@ -670,7 +675,7 @@ import {
     }
 
     .step-panel h2 {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-header);
       font-size: 2rem;
       margin-bottom: 0.5rem;
       color: var(--accent);
@@ -733,7 +738,7 @@ import {
 
     .range-value {
       text-align: center;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       color: var(--accent);
       font-size: 1.25rem;
       margin-top: 0.5rem;
@@ -791,7 +796,7 @@ import {
 
     .goal-card.selected {
       border-color: var(--accent);
-      background: rgba(232, 255, 71, 0.1);
+      background: rgba(255, 95, 31, 0.1);
     }
 
     .goal-icon {
@@ -889,7 +894,7 @@ import {
 
     .period-card.selected {
       border-color: var(--accent);
-      background: rgba(232, 255, 71, 0.1);
+      background: rgba(255, 95, 31, 0.1);
     }
 
     .period-card h4 {
@@ -923,7 +928,7 @@ import {
 
     .toggle-card.active {
       border-color: var(--accent);
-      background: rgba(232, 255, 71, 0.1);
+      background: rgba(255, 95, 31, 0.1);
     }
 
     .toggle-content {
@@ -972,7 +977,7 @@ import {
 
     .level-card.selected {
       border-color: var(--accent);
-      background: rgba(232, 255, 71, 0.1);
+      background: rgba(255, 95, 31, 0.1);
     }
 
     .level-icon {
@@ -1034,10 +1039,10 @@ import {
       display: inline-flex;
       align-items: center;
       gap: 0.75rem;
-      background: var(--accent);
-      color: var(--bg);
+      background: var(--accent-gradient);
+      color: white;
       border: none;
-      border-radius: 12px;
+      border-radius: var(--radius-md);
       padding: 1rem 2rem;
       font-size: 1.25rem;
       font-weight: bold;
@@ -1047,7 +1052,7 @@ import {
 
     .generate-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(232, 255, 71, 0.3);
+      box-shadow: 0 8px 24px rgba(255, 95, 31, 0.35);
     }
 
     .btn-icon {
@@ -1080,6 +1085,13 @@ import {
 
     .generating-state p {
       color: var(--muted);
+    }
+
+    .generating-hint {
+      color: var(--accent);
+      font-size: 0.875rem;
+      margin-top: 1rem;
+      opacity: 0.85;
     }
 
     /* Success State */
@@ -1186,8 +1198,25 @@ import {
         padding: 1rem;
       }
 
+      .progress-bar {
+        margin-bottom: 2rem;
+      }
+
+      .step-indicators {
+        display: none;
+      }
+
+      .step-panel {
+        padding: 1.5rem;
+      }
+
+      .step-panel h2 {
+        font-size: 1.6rem;
+      }
+
       .form-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
       }
 
       .form-group.full-width {
@@ -1196,23 +1225,186 @@ import {
 
       .goal-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
       }
 
-      .period-cards, .level-cards {
+      .goal-card {
+        padding: 1rem;
+      }
+
+      .goal-card h3 {
+        font-size: 0.95rem;
+      }
+
+      .goal-card p {
+        font-size: 0.8rem;
+      }
+
+      .number-selector, .days-selector {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .number-btn, .day-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 1rem;
+      }
+
+      .period-cards {
         grid-template-columns: 1fr;
+        gap: 0.8rem;
       }
 
-      .step-indicators {
-        display: none;
+      .period-card {
+        padding: 1rem;
+      }
+
+      .resource-toggles {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+      }
+
+      .toggle-card {
+        padding: 1rem;
+      }
+
+      .toggle-icon {
+        font-size: 1.5rem;
+      }
+
+      .toggle-label {
+        font-size: 0.8rem;
+      }
+
+      .equipment-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .level-cards {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+      }
+
+      .level-card {
+        padding: 1rem;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
+        gap: 1rem;
+      }
+
+      .level-icon {
+        font-size: 2rem;
+        margin-bottom: 0;
+      }
+
+      .level-card h3 {
+        margin-bottom: 0.2rem;
+      }
+
+      .radio-group, .checkbox-group {
+        gap: 0.5rem;
+      }
+
+      .radio-option, .checkbox-option {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
       }
 
       .summary-grid {
         grid-template-columns: 1fr;
+        gap: 0.8rem;
+      }
+
+      .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: row;
+      }
+
+      .generate-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 1rem;
+        font-size: 1.1rem;
+      }
+
+      .navigation-buttons {
+        flex-direction: column-reverse;
+        gap: 0.8rem;
+      }
+
+      .btn-primary, .btn-secondary {
+        width: 100%;
+        text-align: center;
+        margin-left: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .onboarding-container {
+        padding: 0.75rem;
+      }
+
+      .step-panel {
+        padding: 1rem;
+        border-radius: 12px;
+      }
+
+      .step-panel h2 {
+        font-size: 1.4rem;
+      }
+
+      .step-description {
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .goal-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .goal-icon {
+        font-size: 1.5rem;
+      }
+
+      .number-btn, .day-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+      }
+
+      .resource-toggles {
+        grid-template-columns: 1fr;
+      }
+
+      .equipment-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .generating-state, .success-state, .error-state {
+        padding: 1.5rem 1rem;
+      }
+
+      .success-icon {
+        font-size: 3rem;
+      }
+
+      .start-btn {
+        width: 100%;
+        padding: 0.875rem;
+      }
+
+      textarea {
+        min-height: 80px;
       }
     }
   `]
 })
-export class OnboardingComponent implements OnInit {
+export class OnboardingComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private onboardingService = inject(OnboardingService);
@@ -1223,6 +1415,10 @@ export class OnboardingComponent implements OnInit {
   planGenerated = signal(false);
   generatedPlan = signal<any>(null);
   generationError = signal<string | null>(null);
+  /** ID del plan placeholder creado al lanzar la generación */
+  pendingPlanId = signal<number | null>(null);
+  /** Intervalo de polling */
+  private pollingInterval: ReturnType<typeof setInterval> | null = null;
 
   // Opciones
   genderOptions = [
@@ -1327,10 +1523,10 @@ export class OnboardingComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Cargar estado de onboarding si existe
-    this.onboardingService.getOnboardingStatus().subscribe(status => {
-      if (status.onboardingCompleted) {
-        this.router.navigate(['/plan']);
+    // Si ya completó onboarding y tiene plan activo, redirigir a Mi Plan
+    this.onboardingService.getOnboardingStatus(true).subscribe(status => {
+      if (status.onboardingCompleted && status.hasActivePlan) {
+        this.router.navigate(['/mi-plan']);
       } else if (status.nextStep > 1) {
         this.currentStep.set(status.nextStep);
       }
@@ -1544,27 +1740,80 @@ export class OnboardingComponent implements OnInit {
     return text.split(',').map(s => s.trim()).filter(s => s.length > 0);
   }
 
-  // Generar plan
+  // Generar plan (asíncrono: el backend devuelve 202 inmediatamente)
   async generatePlan() {
     this.isGenerating.set(true);
     this.generationError.set(null);
-    
+    this.pendingPlanId.set(null);
+
     try {
-      // Primero completar el onboarding
+      // Completar el onboarding si no está completo
       await firstValueFrom(this.onboardingService.completeOnboarding());
-      
-      // Luego generar el plan
-      const plan = await firstValueFrom(this.onboardingService.generatePlan({ regenerate: true }));
-      this.generatedPlan.set(plan);
-      this.planGenerated.set(true);
+
+      // Lanzar generación → recibimos plan_id y 202 inmediatamente
+      const accepted = await firstValueFrom(
+        this.onboardingService.generatePlan({ regenerate: true })
+      );
+      this.pendingPlanId.set(accepted.planId);
+
+      // Iniciar polling cada 5 segundos
+      this.startPolling(accepted.planId);
     } catch (error: any) {
-      this.generationError.set(error?.error?.detail || 'Error al generar el plan. Por favor, inténtalo de nuevo.');
-    } finally {
       this.isGenerating.set(false);
+      this.generationError.set(
+        error?.error?.detail || 'Error al iniciar la generación del plan. Por favor, inténtalo de nuevo.'
+      );
     }
   }
 
+  private startPolling(planId: number) {
+    // Limpiar cualquier polling previo
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+
+    this.pollingInterval = setInterval(async () => {
+      try {
+        const statusResp = await firstValueFrom(
+          this.onboardingService.getGenerationStatus(planId)
+        );
+
+        if (statusResp.generationStatus === 'completed') {
+          this.stopPolling();
+          // Cargar el plan completo
+          const plan = await firstValueFrom(
+            this.onboardingService.getActivePlan(true)
+          );
+          this.generatedPlan.set(plan);
+          this.isGenerating.set(false);
+          this.planGenerated.set(true);
+        } else if (statusResp.generationStatus === 'error') {
+          this.stopPolling();
+          this.isGenerating.set(false);
+          this.generationError.set(
+            statusResp.generationError || 'Error al generar el plan. Por favor, inténtalo de nuevo.'
+          );
+        }
+        // Si sigue 'generating' o 'pending', continuamos esperando
+      } catch {
+        // Error de red puntual: no detener el polling, lo reintentará
+      }
+    }, 5000);
+  }
+
+  private stopPolling() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+    }
+  }
+
+  ngOnDestroy() {
+    this.stopPolling();
+  }
+
   goToPlan() {
+    this.stopPolling();
     this.router.navigate(['/mi-plan']);
   }
 }

@@ -23,10 +23,13 @@ export class AuthService {
   private baseUrl = environment.apiUrl;
 
   currentUser = signal<User | null>(null);
+  private _hasCompletedOnboarding = signal<boolean>(false);
+  
   isAuthenticated = computed(() => !!this.currentUser());
+  hasCompletedOnboarding = computed(() => this._hasCompletedOnboarding());
   needsOnboarding = computed(() => {
     const user = this.currentUser();
-    return user !== null && !user.onboardingCompleted;
+    return user !== null && !this._hasCompletedOnboarding();
   });
 
   constructor() {
@@ -50,7 +53,7 @@ export class AuthService {
       if (this.needsOnboarding()) {
         this.router.navigate(['/onboarding']);
       } else {
-        this.router.navigate(['/plan']);
+        this.router.navigate(['/mi-plan']);
       }
     }
   }
@@ -66,6 +69,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('token');
     this.currentUser.set(null);
+    this._hasCompletedOnboarding.set(false);
     this.router.navigate(['/login']);
   }
 
@@ -81,6 +85,7 @@ export class AuthService {
       ));
       if (user) {
         this.currentUser.set(user);
+        this._hasCompletedOnboarding.set(user.onboardingCompleted ?? false);
       }
     } catch {
       this.logout();
@@ -95,6 +100,15 @@ export class AuthService {
     const user = this.currentUser();
     if (user) {
       this.currentUser.set({ ...user, onboardingCompleted: true });
+      this._hasCompletedOnboarding.set(true);
+    }
+  }
+
+  setOnboardingStatus(completed: boolean): void {
+    this._hasCompletedOnboarding.set(completed);
+    const user = this.currentUser();
+    if (user) {
+      this.currentUser.set({ ...user, onboardingCompleted: completed });
     }
   }
 }

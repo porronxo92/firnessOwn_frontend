@@ -19,7 +19,9 @@ import {
   CurrentWeekResponse,
   AdjustmentFeedback,
   AdjustmentSuggestion,
-  GeneratePlanRequest
+  GeneratePlanRequest,
+  PlanGenerationAccepted,
+  PlanGenerationStatus
 } from '../models/generated-plan.model';
 
 @Injectable({
@@ -55,6 +57,22 @@ export class OnboardingService {
     this._onboardingStatus()?.nextStep ?? 1
   );
 
+  // === Métodos para invalidar cache ===
+  
+  clearStatusCache(): void {
+    this._onboardingStatus.set(null);
+  }
+
+  clearPlanCache(): void {
+    this._activePlan.set(null);
+  }
+
+  clearAllCache(): void {
+    this._profile.set(null);
+    this._onboardingStatus.set(null);
+    this._activePlan.set(null);
+  }
+
   // === Métodos de Perfil ===
 
   getProfile(): Observable<UserProfile | null> {
@@ -85,7 +103,13 @@ export class OnboardingService {
 
   // === Métodos de Onboarding por pasos ===
 
-  getOnboardingStatus(): Observable<OnboardingStatus> {
+  getOnboardingStatus(forceRefresh = false): Observable<OnboardingStatus> {
+    // Usar cache si existe y no se fuerza refresh
+    const cached = this._onboardingStatus();
+    if (cached && !forceRefresh) {
+      return of(cached);
+    }
+
     return this.http.get<OnboardingStatus>(`${this.baseUrl}/status`).pipe(
       map(status => this.toCamelCase(status) as OnboardingStatus),
       tap(status => this._onboardingStatus.set(status))
@@ -182,18 +206,27 @@ export class OnboardingService {
 
   // === Métodos de Plan Generado ===
 
-  generatePlan(request: GeneratePlanRequest = {}): Observable<GeneratedPlan> {
+  /** Lanza la generación en segundo plano. Devuelve plan_id y 202 inmediatamente. */
+  generatePlan(request: GeneratePlanRequest = {}): Observable<PlanGenerationAccepted> {
     this._isGeneratingPlan.set(true);
-    return this.http.post<GeneratedPlan>(`${this.baseUrl}/generate-plan`, request).pipe(
-      map(plan => this.toCamelCase(plan) as GeneratedPlan),
-      tap(plan => {
-        this._activePlan.set(plan);
-        this._isGeneratingPlan.set(false);
+    return this.http.post<PlanGenerationAccepted>(`${this.baseUrl}/generate-plan`, request).pipe(
+      map(resp => this.toCamelCase(resp) as PlanGenerationAccepted),
+      tap(() => {
+        // No desactivamos isGeneratingPlan aquí — lo hace el componente tras el polling
       }),
       catchError(error => {
         this._isGeneratingPlan.set(false);
         throw error;
       })
+    );
+  }
+
+  /** Consulta el estado de generación de un plan (para polling). */
+  getGenerationStatus(planId: number): Observable<PlanGenerationStatus> {
+    return this.http.get<PlanGenerationStatus>(
+      `${this.baseUrl}/plans/${planId}/generation-status`
+    ).pipe(
+      map(resp => this.toCamelCase(resp) as PlanGenerationStatus)
     );
   }
 
@@ -203,7 +236,13 @@ export class OnboardingService {
     );
   }
 
-  getActivePlan(): Observable<GeneratedPlan | null> {
+  getActivePlan(forceRefresh = false): Observable<GeneratedPlan | null> {
+    // Usar cache si existe y no se fuerza refresh
+    const cached = this._activePlan();
+    if (cached && !forceRefresh) {
+      return of(cached);
+    }
+
     return this.http.get<GeneratedPlan>(`${this.baseUrl}/plans/active`).pipe(
       map(plan => plan ? this.toCamelCase(plan) as GeneratedPlan : null),
       tap(plan => {
